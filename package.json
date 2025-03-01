@@ -1,0 +1,64 @@
+{
+  "name": "LCCDB",
+  "version": "1.0.0",
+  "description": "Your Electron app description",
+  "main": "main.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "electron .",
+    "build": "electron-builder",
+    "dev": "npm run start & npm run electron",
+    "electron": "electron-reload .",
+    "serve": "firebase emulators:start",
+    "deploy": "firebase deploy",
+    "devs": "nodemon --watch public -e html,css,js --exec 'firebase emulators:start'",
+    "starts": "webpack serve --mode development"
+  },
+  "build": {
+    "appId": "com.yourapp.id",
+    "productName": "YourApp",
+    "win": {
+      "target": "nsis",
+      "icon": "icon.ico"
+    },
+    "mac": {
+      "target": "dmg",
+      "icon": "icon.icns"
+    },
+    "publish": {
+      "provider": "github",
+      "owner": "Megahelperof",
+      "repo": "LCCCDB"
+    }
+  },
+  "dependencies": {
+    "ajv": "^6.12.6",
+    "axios": "^1.7.7",
+    "body-parser": "^1.20.2",
+    "config.js": "^0.1.0",
+    "consola": "^2.15.3",
+    "cookie-parser": "^1.4.6",
+    "date-fns": "^4.1.0",
+    "dotenv": "^16.4.7",
+    "electron": "^22.3.27",
+    "electron-builder": "^23.6.0",
+    "electron-updater": "^4.5.4",
+    "express": "^4.21.2",
+    "firebase": "^10.13.1",
+    "firebase-admin": "^12.7.0",
+    "jsdom": "^25.0.0",
+    "jsqr": "^1.4.0",
+    "mongoose": "^8.6.1",
+    "superagent": "^7.1.3",
+    "uuid": "^10.0.0",
+    "electron-log": "^4.4.8"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.10.0",
+    "electron-reload": "^1.5.0",
+    "eslint": "^9.10.0",
+    "eslint-plugin-react": "^7.35.2",
+    "globals": "^15.9.0",
+    "tailwindcss": "^3.4.12"
+  }
+}

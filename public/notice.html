@@ -1,0 +1,308 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Notice</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        form {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        input, textarea, button {
+            padding: 10px;
+            font-size: 16px;
+        }
+        #message {
+            margin-top: 20px;
+            padding: 10px;
+            border-radius: 5px;
+        }
+        .success {
+            background-color: #d4edda;
+            color: #155724;
+        }
+        .error {
+            background-color: #f8d7da;
+            color: #721c24;
+        }
+        .notice-item {
+        border: 1px solid #ccc;
+        padding: 10px;
+        margin: 10px 0;
+        border-radius: 5px;
+    }
+    .popup {
+        position: fixed;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        background: white;
+        padding: 20px;
+        border: 1px solid #000;
+        z-index: 1000;
+    }
+     .pagination {
+            margin-top: 10px;
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+        .pagination button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+    </style>
+        <script src="https://cdn.jsdelivr.net/npm/fuse.js@6.6.2"></script>
+</head>
+<body>
+    <h1>Admin Notice</h1>
+    <form id="noticeForm">
+        <input type="text" id="studentNumber" placeholder="Student Number" required>
+        <textarea id="noticeText" placeholder="Enter notice" rows="4" required></textarea>
+        <button type="submit">Submit Notice</button>
+    </form>
+    <div id="message"></div>
+    <div style="margin-top: 20px;">
+        <button id="toggleNoticeList">Show All Notices</button>
+        <div id="noticeList" style="display: none;">
+            <h3>All Notices</h3>
+            <input type="text" id="searchInput" placeholder="Search by name, number, grade, section, or notice..." style="width: 100%; margin: 10px 0; padding: 8px;">
+            <div id="noticesContainer"></div>
+        </div>
+    </div>
+    
+    <div id="noticePopup" class="popup" style="display: none;">
+        <h2>Notice Details</h2>
+        <div id="noticeContent"></div>
+        <button onclick="document.getElementById('noticePopup').style.display = 'none'">Close</button>
+    </div>
+    
+    <div id="editNoticePopup" class="popup" style="display: none;">
+        <h2>Edit Notice</h2>
+        <input type="hidden" id="currentFileName">
+        <textarea id="newNoticeText" rows="4"></textarea>
+        <button onclick="updateNotice()">Save</button>
+        <button onclick="document.getElementById('editNoticePopup').style.display = 'none'">Cancel</button>
+    </div>
+    
+    <script>
+
+let allNotices = [];
+        let filteredNotices = [];
+        let currentPage = 0;
+        const itemsPerPage = 5;
+
+        document.getElementById('noticeForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const studentNumber = document.getElementById('studentNumber').value;
+            const noticeText = document.getElementById('noticeText').value;
+            const messageDiv = document.getElementById('message');
+
+            try {
+                const response = await fetch('https://lcserver.onrender.com/admin/submitNotice', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ studentNumber, noticeText }),
+                });
+                const data = await response.json();
+                if (data.success) {
+                    messageDiv.textContent = 'Notice submitted successfully';
+                    messageDiv.className = 'success';
+                } else {
+                    messageDiv.textContent = data.message || 'Failed to submit notice';
+                    messageDiv.className = 'error';
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                messageDiv.textContent = 'An error occurred while submitting the notice';
+                messageDiv.className = 'error';
+            }
+        });
+
+        function renderNotices() {
+            const container = document.getElementById('noticesContainer');
+            container.innerHTML = '';
+            
+            const startIndex = currentPage * itemsPerPage;
+            const paginatedNotices = filteredNotices.slice(startIndex, startIndex + itemsPerPage);
+            
+            paginatedNotices.forEach(notice => {
+                const noticeItem = document.createElement('div');
+                noticeItem.className = 'notice-item';
+                noticeItem.innerHTML = `
+                    <p><strong>Student Number:</strong> ${notice.studentNumber}</p>
+                    ${notice.studentInfo.fullName ? `
+                    <p><strong>Name:</strong> ${notice.studentInfo.fullName}</p>
+                    <p><strong>Grade:</strong> ${notice.studentInfo.grade}</p>
+                    <p><strong>Section:</strong> ${notice.studentInfo.section}</p>
+                    ` : '<p>Student information not found</p>'}
+                    <button onclick="viewNotice('${notice.fileName}')">View</button>
+                    <button onclick="openEdit('${notice.fileName}')">Edit</button>
+                    <button onclick="deleteNotice('${notice.fileName}')">Delete</button>
+                `;
+                container.appendChild(noticeItem);
+            });
+
+            // Pagination controls
+            const totalPages = Math.ceil(filteredNotices.length / itemsPerPage);
+            const paginationDiv = document.createElement('div');
+            paginationDiv.className = 'pagination';
+            paginationDiv.innerHTML = `
+                <button onclick="previousPage()" ${currentPage === 0 ? 'disabled' : ''}>Previous</button>
+                <span>Page ${currentPage + 1} of ${totalPages}</span>
+                <button onclick="nextPage()" ${currentPage >= totalPages - 1 ? 'disabled' : ''}>Next</button>
+            `;
+            container.appendChild(paginationDiv);
+        }
+
+        function previousPage() {
+            if (currentPage > 0) {
+                currentPage--;
+                renderNotices();
+            }
+        }
+
+        function nextPage() {
+            const totalPages = Math.ceil(filteredNotices.length / itemsPerPage);
+            if (currentPage < totalPages - 1) {
+                currentPage++;
+                renderNotices();
+            }
+        }
+
+        // Search functionality
+        document.getElementById('searchInput').addEventListener('input', function() {
+            const searchTerm = this.value.trim();
+            
+            if (!searchTerm) {
+                filteredNotices = [...allNotices];
+            } else {
+                const fuse = new Fuse(allNotices, {
+                    keys: [
+                        { name: 'studentNumber', weight: 0.2 },
+                        { name: 'studentInfo.fullName', weight: 0.3 },
+                        { name: 'studentInfo.grade', weight: 0.2 },
+                        { name: 'studentInfo.section', weight: 0.2 },
+                        { name: 'content', weight: 0.5 }
+                    ],
+                    includeScore: true,
+                    threshold: 0.3,
+                    ignoreLocation: true,
+                    minMatchCharLength: 2
+                });
+                
+                filteredNotices = fuse.search(searchTerm).map(result => result.item);
+            }
+            
+            currentPage = 0;
+            renderNotices();
+        });
+
+          // Toggle notice list visibility
+        document.getElementById('toggleNoticeList').addEventListener('click', () => {
+            const list = document.getElementById('noticeList');
+            list.style.display = list.style.display === 'none' ? 'block' : 'none';
+            if (list.style.display === 'block') loadAllNotices();
+        });
+        
+        async function loadAllNotices() {
+            try {
+                const response = await fetch('https://lcserver.onrender.com/admin/notices');
+                const { notices } = await response.json();
+                allNotices = [];
+                
+                for (const notice of notices) {
+                    const studentNumber = notice.fileName.split('notice/')[1].split('notice_')[0];
+                    const studentInfo = await fetchStudentInfo(studentNumber);
+                    
+                    allNotices.push({
+                        fileName: notice.fileName,
+                        content: notice.content,
+                        studentNumber: studentNumber,
+                        studentInfo: studentInfo.studentInfo || {}
+                    });
+                }
+                
+                filteredNotices = [...allNotices];
+                currentPage = 0;
+                renderNotices();
+            } catch (error) {
+                console.error('Error loading notices:', error);
+            }
+        }
+
+    async function fetchStudentInfo(studentNumber) {
+        try {
+            const response = await fetch('https://lcserver.onrender.com/api/getStudentInfo', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ query: studentNumber })
+            });
+            return await response.json();
+        } catch (error) {
+            return { success: false };
+        }
+    }
+
+    async function viewNotice(fileName) {
+        const response = await fetch(`https://lcserver.onrender.com/admin/notices`);
+        const { notices } = await response.json();
+        const notice = notices.find(n => n.fileName === fileName);
+        
+        document.getElementById('noticeContent').textContent = notice.content;
+        document.getElementById('noticePopup').style.display = 'block';
+    }
+
+    function openEdit(fileName) {
+        document.getElementById('currentFileName').value = fileName;
+        document.getElementById('editNoticePopup').style.display = 'block';
+    }
+
+async function updateNotice() {
+    const fileName = document.getElementById('currentFileName').value;
+    const newText = document.getElementById('newNoticeText').value;
+    
+    // Delete old notice with encoding
+    const encodedFileName = encodeURIComponent(fileName);
+    await fetch(`/admin/removeNotice/${encodedFileName}`, { 
+        method: 'DELETE' 
+    });
+    
+    // ... rest of the function remains the same ...
+        // Create new notice
+        const studentNumber = fileName.split('notice/')[1].split('notice_')[0];
+        await fetch('https://lcserver.onrender.com/admin/submitNotice', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ 
+                studentNumber,
+                noticeText: newText 
+            })
+        });
+        
+        document.getElementById('editNoticePopup').style.display = 'none';
+        loadAllNotices();
+    }
+
+    async function deleteNotice(fileName) {
+    if (!confirm('Are you sure you want to delete this notice?')) return;
+    // Encode the fileName to handle special characters
+    const encodedFileName = encodeURIComponent(fileName);
+    await fetch(`https://lcserver.onrender.com/admin/removeNotice/${encodedFileName}`, { 
+        method: 'DELETE' 
+    });
+    loadAllNotices();
+}
+    </script>
+</body>
+</html>
