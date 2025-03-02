@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Barcode Scanner</title>
+    <title>student</title>
     <link rel="stylesheet" href="./css/styles.css">
     <link rel="manifest" type="application/json" href="/manifest.webmanifest" />
 </head>
@@ -147,6 +147,8 @@
 
   <!-- Include the client-side JS directly -->
   <script>
+    import { getStorage, ref, getMetadata, listAll, getDownloadURL } from 'https://www.gstatic.com/firebasejs/9.6.10/firebase-storage.js';
+    import { initializeApp } from 'https://www.gstatic.com/firebasejs/9.6.10/firebase-app.js';
     const video = document.getElementById('video');
     const canvas = document.getElementById('canvas');
     const resultDiv = document.getElementById('result');
