@@ -39,12 +39,13 @@
         }
 
         async function signUp(event) {
-            event.preventDefault();
-            const form = document.getElementById('signupForm');
-            const studentNumber = form.studentNumber.value;
-            const fullName = form.fullName.value;
-            const grade = form.grade.value;
-            const section = form.section.value;
+    event.preventDefault();
+    const form = document.getElementById('signupForm');
+    const studentNumber = form.studentNumber.value;
+    const fullName = form.fullName.value;
+    const grade = form.grade.value;
+    const sectionCode = form.section.value;
+    const section = SECTION_MAP[grade]?.[sectionCode];
 
             if (!studentNumber || !fullName || !grade || !section) {
                 alert("Please fill in all fields.");
@@ -102,49 +103,51 @@
         <fieldset id="grade-7-sections" class="grade-section">
             <legend>Grade 7 Sections:</legend>
             <input type="radio" id="7A" name="section" value="A" required>
-            <label for="7A">Section A</label>
+            <label for="7A">Section Purity</label>
             <input type="radio" id="7B" name="section" value="B" required>
-            <label for="7B">Section B</label>
+            <label for="7B">Section Hope</label>
             <input type="radio" id="7C" name="section" value="C" required>
-            <label for="7C">Section C</label>
+            <label for="7C">Section Faith</label>
             <input type="radio" id="7D" name="section" value="D" required>
-            <label for="7D">Section D</label>
+            <label for="7D">Section Charity</label>
         </fieldset>
 
         <fieldset id="grade-8-sections" class="grade-section">
             <legend>Grade 8 Sections:</legend>
             <input type="radio" id="8A" name="section" value="A" required>
-            <label for="8A">Section A</label>
+            <label for="8A">Section Courage</label>
             <input type="radio" id="8B" name="section" value="B" required>
-            <label for="8B">Section B</label>
+            <label for="8B">Section Courtesy</label>
             <input type="radio" id="8C" name="section" value="C" required>
-            <label for="8C">Section C</label>
+            <label for="8C">Section Diligence</label>
             <input type="radio" id="8D" name="section" value="D" required>
-            <label for="8D">Section D</label>
+            <label for="8D">Section Industry</label>
         </fieldset>
 
         <fieldset id="grade-9-sections" class="grade-section">
             <legend>Grade 9 Sections:</legend>
             <input type="radio" id="9A" name="section" value="A" required>
-            <label for="9A">Section A</label>
+            <label for="9A">Section Prudence</label>
             <input type="radio" id="9B" name="section" value="B" required>
-            <label for="9B">Section B</label>
+            <label for="9B">Section Perseverance</label>
             <input type="radio" id="9C" name="section" value="C" required>
-            <label for="9C">Section C</label>
+            <label for="9C">Section Patience</label>
             <input type="radio" id="9D" name="section" value="D" required>
-            <label for="9D">Section D</label>
+            <label for="9D">Section Humility</label>
         </fieldset>
 
         <fieldset id="grade-10-sections" class="grade-section">
             <legend>Grade 10 Sections:</legend>
             <input type="radio" id="10A" name="section" value="A" required>
-            <label for="10A">Section A</label>
+            <label for="10A">Section Charism</label>
             <input type="radio" id="10B" name="section" value="B" required>
-            <label for="10B">Section B</label>
+            <label for="10B">Section Peace</label>
             <input type="radio" id="10C" name="section" value="C" required>
-            <label for="10C">Section C</label>
+            <label for="10C">Section Fortitude</label>
             <input type="radio" id="10D" name="section" value="D" required>
-            <label for="10D">Section D</label>
+            <label for="10D">Section Amity</label>
+            <input type="radio" id="10E" name="section" value="E" required>
+            <label for="10E">Section Love</label>
         </fieldset>
 
         <br>
